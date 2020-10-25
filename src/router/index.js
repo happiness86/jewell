@@ -1,5 +1,6 @@
 import Vue from 'vue'
 import VueRouter from 'vue-router'
+import Login from '@/views/login/Login'
 import Home from '../views/Home.vue'
 
 Vue.use(VueRouter)
@@ -7,21 +8,43 @@ Vue.use(VueRouter)
 const routes = [
   {
     path: '/',
-    name: 'Home',
-    component: Home
+    name: 'Login',
+    component: Login
   },
   {
-    path: '/about',
-    name: 'About',
-    // route level code-splitting
-    // this generates a separate chunk (about.[hash].js) for this route
-    // which is lazy-loaded when the route is visited.
-    component: () => import(/* webpackChunkName: "about" */ '../views/About.vue')
+    path: '/home',
+    name: 'Home',
+    component: Home,
+    children: [
+      {
+        path: 'content',
+        name: 'Content',
+        component: () => import('../views/Content/Content.vue')
+      }
+    ]
   }
 ]
 
 const router = new VueRouter({
   routes
+})
+
+// 全局导航守卫，验证是否登录
+
+router.beforeEach((to, from, next) => {
+  const user = sessionStorage.getItem('user')
+  if (to.name !== 'Login') {
+    if (!user) {
+      next({ name: 'Login' })
+    } else {
+      next()
+    }
+  } else {
+    if (user) {
+      sessionStorage.removeItem('user')
+    }
+    next()
+  }
 })
 
 export default router
